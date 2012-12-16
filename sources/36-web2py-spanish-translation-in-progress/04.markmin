@@ -1,6 +1,6 @@
-## The core
+## El núcleo
 
-### Command line options
+### Opciones en linea de comandos
 
 It is possible to skip the GUI and start web2py directly from the command line by typing something like:
 ``password``:inxx
@@ -11,7 +11,7 @@ python web2py.py -a 'your password' -i 127.0.0.1 -p 8000
 
 When web2py starts, it creates a file called "parameters_8000.py" where it stores the hashed password. If you use "<ask>" as the password, web2py prompts you for it.
 
-For additional security, you can start web2py with:
+Para seguridad adicional, puede iniciar web2py con:
 ``
 python web2py.py -a '<recycle>' -i 127.0.0.1 -p 8000
 ``:code
