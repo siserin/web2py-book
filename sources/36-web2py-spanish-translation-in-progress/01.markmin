@@ -1,0 +1,498 @@
+## Introducción
+
+Web2py es libre, es un marco de desarrollo de código abierto para el desarrollo ágil y seguro de aplicaciones web; está escrito y programado en idioma Python ``python``:cite.
+
+Web2py es un marco de desarrollo completo, lo que significa que contiene todos los componentes que se necesitan para construir aplicaciones web completamente funcionables.
+
+Web2py ha sido diseñado para guiar al desarrollador a seguir las buenas prácticas en desarrollo orientado a la web, dichas prácticas como el patrón de desarrollo (MVC) Modelo Vista Controlado, en el cual separa la representación de datos (modelo), de la presentación de los datos (la vista), y también de la lógica de la aplicación (controlador). Además provee librerías para ayudar al desarrollador, ha diseñar, implementar y probar estas tres partes separadas y hacerlas funcionar todas juntas.
+
+Ha sido construído para ser seguro. Esto significa que automáticamente identifica muchos de los problemas que puedan llevar a vulnerabilidades de seguridad, siguiendo buenas prácticas establecidas. Por ejemplo, valida todas las entradas, (para prevenir injertos de código "injections"), comillando todas las salidas (para prevenir "cross-site scripting"), renombra los archivos subidos al servidor (para prevenir "traversal attacks").
+
+Web2py incluye una Capa de abstracción de Base de datos llamada "DAL" que escribe SQL``sql:w``:cite dinámicamente así el desarrollador no tiene que hacerlo. El DAL sabe como generar el SQL transparentemente para SQLite``sqlite``:cite, MySQL``mysql``:cite, PostgreSQL``postgres``:cite, MSSQL``mssql``:cite,
+FireBird``firebird``:cite, Oracle``oracle``:cite, IBM DB2``db2``:cite, Informix``informix``:cite, and
+Ingres``ingresdb``:cite.
+
+El DAL también soporta llamadas a las funciones del almacén de datos de Google, cuando corre en "Google App Engine (GAE)" ``gae``:cite. Experimentalmente soportamos más bases de datos. Por favor verifique en el sitio de web2py y en la lista de correo para adapatadores más recientes. También una vez que una o más tablas de una base de datos son definidas, web2py genera una interfaz de administración de dichas tablas o base de datos. 
+
+Web2py difiere de otros marcos de desarrollo web, en que es el único que adopta el paradigma de la web 2.0, dónde la web es la computadora. De hecho, web2py no requiere instalación ni configuración alguna; corre en cualquier arquitectura, que corra python (Windows, Windows CE, Mac OS X, iOS, and Unix/Linux), y el desarrollo, implementación y fases de mantenimiento para la aplicación pueden ser hechas de manera local o de manera remota. web2py corre con CPython (implementación del lenguaje C) y Jython (implementación del lenguaje java), en versiones de python 2.5, 2.6, y 2.7.
+
+Web2py provee un sistema de tickets. Si un error ocurre, un ticket es enviado al usuario, y el error es "loggeado" para el administrador.
+
+Web2py es de código libre y distribuído bajo la licencia LGPL versión 3.0.
+
+Otra característica de web2py es que los desarrolladores del mismo, siempre tienen en cuenta la compatibilidad hacia atrás en los cambios que hacen al código, esto se ha hecho así desde la primera versión de web2py de Octubre del 2007. Nuevas características han sido agregadas así también como errores han sido corregidos, también asi, si una aplicación funcionaba con la versión 1.0, el mismo sigue funcionando con las versiones recientes.
+
+Unos ejemplos de sentencias que ilustran el poder y la simplicidad. El código:
+
+``
+db.define_table('person', Field('name'), Field('image', 'upload'))
+``:code
+
+Crea una tabla de base de datos llamada "persona" con dos campos "nombre" e "imagen", algo que necesita ser subido (la actual imagen). Si la tabla ya existe pero no coincide con la definición, es alterada propiamente.
+
+Dada la tabla definida anteriormente, el siguiente código:
+``
+form = crud.create(db.person)
+``:code
+
+crea un formulario de inserción para esta tabla, que permite al usuario subir imágenes. Así también valida el formulario enviado, renombre la imagen enviada de una manera segura, almacena la imagen en un archivo, inserta el correspondiente registro en la base de datos, previniendo el doble-envío y eventualmente modifica el formulario agregando los mensajes de errores si los datos no pasan la validación.
+
+El siguiente código:
+``
+@auth.requires_permission('read','person')
+def f(): ....
+``:code
+
+previene a los visitantes de acceder a la función ``f`` a menos que el visitante sea un miembro del grupo de aquellos usuarios que tienen permiso de lectura en los registros de la tabla "persona". Si el visitante no se encuentra ingresado, es re-dirigido a la página de ingreso al sistema (la cual es proveída por defecto por web2py). 
+
+El siguiente código incrústa un componente en la página.
+``
+{{=LOAD('other_controller','function.load',ajax=True, ajax_trap=True)}}
+``:code
+
+Esto instruye a web2py a leer en una vista el contenido generado por otro controlador función (esto funciona con cualquier función). Carga el contenido vía Ajax, incrustando en la página (usando el esquema correspondiente, no el esquema de la función "other_controller")  y atrapa todo formulario contenido en el bloque cargado, así se puede enviar el formulario usando Ajax sin tener que recargar la página. También se puede hacer "LOAD" de aplicaciones no-web2py.
+
+La ayuda "LOAD" permite un diseño modular de aplicaciones; esto es discutido con algún detalle en los últimos capítulos de este libro.
+
+
+### Principios
+
+La programación en python tipicamente, sigue los siguientes principios básicos:
+
+- Don't repeat yourself (DRY) (No te repitas).
+- There should be only one way of doing things. (Debe de haber una sola manera de hacer las cosas)
+- Explicit is better than implicit. (Explícito es mejor que implícito.)
+
+web2py plenamente abarca los dos primeros principios, forzando al desarrollador a usar prácticas de ingeniería de "software" que previenen la repetición de código. Web2py guía al desarrollador a través de todas estas tareas comunes en el desarrollo de aplicaciones web (creando y procesando formulario, manejando sesiones, errores, cookies*, etc.) *galletitas.
+
+``request``:inxx
+web2py difiere de otros marcos de desarrollo con respecto del tercer principio, que a veces hace conflicto con los otros dos. En particular, web2py no importa las aplicaciones del usuario, sino que las ejecutas en un contexto predefinido. Este contexto expone las palabras claves del lenguaje python, así como también las usadas por web2py.
+
+Para algunos esto puede parecer "mágico", pero no lo es. Simplemente, en la práctica, algunos módulos ya han sido cargados sin la interacción del usuario. Web2py trata de evitar características molestas de otros lenguajes, que fuerzan al desarrollador a importar el mismo módulo arriba de todo en cada modelo y controlador.
+
+web2py importando sus propios módulos, ahorra tiempo y previene errores, siguiendo el espíritu de "no te repitas", y "debería haber una sóla manera de hacer las cosas".
+
+Si el desarrollador desea hacer uso de otro módulos pyrhon, o módulos de terceros, esos módulos deben ser importados de manera explícita como se hace en cualquier otro programa python.
+
+
+### Marcos de desarrollos Web
+``PHP``:inxx ``ASP``:inxx ``JSP``:inxx
+
+En el nivel más fundamental, una aplicación web consiste en un conjunto de programas o funciones, que son ejecutadas cuando su URL es visitada. La salida del programa es retornada al visitante y he impresa en pantalla por el navegador.
+
+El propósito de los marcos de desarrollos web, es la de permitir al desarrollado construír nuevas aplicaciones de manera rápida, fácil y sin errores. Esto es realizado proporcionando APIS y herramientas que reducen y simplifican la cantidad de código que es requerido.
+
+Las dos clásicos enfoques para el desarrollo de aplicaciones web son:
+
+- Generar código HTML ``html:w,html:o``:cite de manera programada.
+- Incrustar código dentro de las páginas HTML.
+
+El primer modelo es aquel seguido, por ejemplo, por los primeros  código CGI.
+El segundo modelo es seguido, por ejemplo, por PHP``php``:cite (dónde el código es en PHP, parecido al lenguaje C), ASP (dónde el códgo es en "Visual Basic") and JSP (dónde el código es en lenguaje JAVA).
+
+Esto es un ejemplo de un programa PHP, cuando es ejecutado, trae los datos de la base de datos y retorna una página HTML desplegando los registros:
+``
+<html><body><h1>Records</h1><?
+  mysql_connect(localhost,username,password);
+  @mysql_select_db(database) or die( "Unable to select database");
+  $query="SELECT * FROM contacts";
+  $result=mysql_query($query);
+  mysql_close();
+  $i=0;
+  while ($i < mysql_numrows($result)) {
+    $name=mysql_result($result,$i,"name");
+    $phone=mysql_result($result,$i,"phone");
+    echo "<b>$name</b><br>Phone:$phone<br /><br /><hr /><br />";
+    $i++;
+  }
+?></body></html>
+``:code
+
+El problema con este enfoque es que el código es incrustado en el HTML, pero el mismo código necesita generar HTML para generar sentencias SQL para las consultas de las base de datos, enredando multiples capas de la aplicación y haciéndolo dificultoso de leer y mantener. Esta situación es aún peor en aplicaciones que hacen uso de AJAX, y la complejidad aumenta con la cantidad de páginas (archivos) que hacen a una aplicación.
+
+La funcionabilidad del código anterior puede ser escrito en web2py en sólo dos lineas de código:
+``
+def index():
+    return HTML(BODY(H1('Records'), db().select(db.contacts.ALL)))
+``:code
+
+En este simple ejemplo, la estructura de la página HTML es representada programadamente por los objetos ``HTML``, ``BODY``, and ``H1`` y la base de datos ``db`` es consultada por el comando ``select`` finalmente todo es serializado en el HTML. Notar que ``db`` no es una palabra del lenguaje sino una variable definida por el usuario. Usaremos este nombre repetidamente para referirnos a una conexión con la base de datos, para evitar confusiones.
+
+Los marcos de desarrollo web son tipicamente categorizado en uno de estos dos tipos: 
+
+- "Pegados" construido mediante el ensamblaje (pegando) varios componentes de terceros. 
+- "Todo incluído" el marco de desarrollo es creado creando componentes diseñados específicamente para integrarse mutuamente y trabajar conjuntamente.
+
+web2py es "todo incluído". Casi todos sus componentes fueron construídos desde 0 y han sido diseñados para trabajar conjuntamente, aunque también funcionan bien fuera del marco de desarrollo. Por ejemplo, La capa de abstracción de datos DAL, o el lenguaje de esquemas pueden ser usados independientemente del marco de desarrollo, importándo ``gluon.dal`` o ``gluon.template`` dentro de otras aplicaciones python. ``gluon`` es el nombre del módulo de web2py que contiene las librerías del sistema. Algunas librerías de web2py, como por ejemplo, las que construyen y procesan formulario desde las tablas de base de datos, tienen sus dependencias en otras partes de web2py. Web2py también puede trabajar con librería de terceros de python, incluído otros lenguajes de esquemas y DALs, pero no funcionarán tan integradamente como los componentes originales de web2py.
+
+### Modelo-Vista-Controlador
+``Model-View-Controller``:inxx
+web2py alienta al desarrollador a separar la representación de los datos (modelo), la presentación de los datos (la vista) y el flujo de la aplicación (controlador). Consideremos de nuevo, el anterior ejemplo y veamos como construír una aplicación a su alrededor. Un ejemplo del patrón MVC de web2py
+
+[[image @///image/en0.png center 480px]]
+
+El típico flujo de el pedído en web2py es descrito en el siguiente diagrama:
+
+[[image @///image/en100.png center 480px]]
+
+En el diagrama:
+- El servidor puede ser el servidor provisto por web2py o cualquier otro servidor de terceros, como es el Apache. El servidor maneja multi-hilos.
+- "main" es la aplicación WSGI principal. Realiza todas las tareas comunes y envuelve las aplicaciones del usuario. Maneja las "cookies", sesiones, transacciones y enrutamiento de URLs.
+Puede servir archivos estáticos si el servidor web no lo hace aún.
+- Los componentes modelos, vistas y controladores hacen la aplicación del usuario.
+- Multiples aplicaciones pueden ser hospedadas en una misma instancia de web2py.
+- Las flechas discontinuas representan la comunicación con el motor de la base de datos. Las consulas a la base de datos pueden ser escritas en lenguaje SQL o usando la capa de abstracción de datos (recomendado) que trae web2py, esto logra que la aplicación web2py no sea dependiente del motor específico de datos.
+- El despachador mapea la URL pedida a una función llamada en el controlador. La salida de la función puede ser una cadena o un diccionario de símbolos. Los datos en el diccionario son renderizados por la vista. Si el visitante pide una página HTML (por defecto), el diccionario es renderizado a una página HTML. Si el visitante pide una página en XML, web2py trata de buscar una vista que pueda renderizar un diccionario en XML. El desarrollador puede crear vistas vistas renderizar páginas en cualquier protocolo soportado  (HTML, XML, JSON, RSS, CSV, RTF) o cualquier otro protocolo del usuario.
+-Todas las llamadas se envuelven en una transacción, y cualquier excepción no manejada, causa que la transacción sea abortada (roll back).  Si el pedido finaliza correctamente, la transacción es aplicada ("committed").
+-Web2py también maneja sesiones y "cookies" automáticamente, y cuando una transacción es aplicada, la sesión también es guardada, a no ser que se especifique de otra manera.
+-Es posible registrar las tareas recurrentes (via cron) para correrlas a determinada hora o después de completadas ciertas acciones. En este camino es posible correr tareas de larga duración o intensivas en segundo plano sin afectar la navegación.
+
+Esta es una aplicación mínima, que consiste en tres archivos:
+
+-----
+"db.py" es el modelo:
+-----
+
+``
+db = DAL('sqlite://storage.sqlite')
+db.define_table('contact',
+   Field('name'),
+   Field('phone'))
+``:code
+
+Conecta a la base de datos (en este ejemplo una base de datos SQLite almacenada en el archivo ``storage.sqlite``) y define una tabla llamada ``contact``. Si la tabla no existe, web2py la crea transparentemente y en segundo plano genera el código SQL en el dialecto SQL apropiado al motor de la base de datos en uso. El desarrollador puede ver el código SQL  pero no necesita cambiar el código si la base de datos por defecto SQLite es reemplazada por MySQL, PostgreSQL, MSSQL, FireBird, Oracle, DB2, Informix, Interbase, Ingres, y Google App Engine (ambas SQL y NoSQL).
+
+Una vez que la tabla es definida y creada, web2py tambien genera una interfaz de administración basada en web, llamada **appadmin**, para acceder a la base de datos y sus tablas.
+
+-----
+"default.py" es el controlador:
+-----
+
+``
+def contacts():
+    grid=SQLFORM.grid(db.contact, user_signature=False)
+    return locals()
+``:code
+
+In web2py, URLs are mapped to Python modules and function calls. In this case, the controller contains
+a single function (or "action") called ``contacts``. An action may
+return a string (the returned web page) or a Python dictionary (a set of
+``key:value`` pairs) or the set of local variables (as in this example).
+If the function returns a dictionary, it is passed to a view with the same
+name as the controller/function, which in turn renders the page.
+In this example, the function ``contacts`` generates a select/search/create/update/delete grid for table ``db.contact``
+and returns the grid to the view.
+
+-----
+"default/contacts.html" is the view:
+-----
+
+``
+{{extend 'layout.html'}}
+<h1>Manage My Contacts</h1>
+{{=grid}}
+``:code
+
+This view is called automatically by web2py after the associated controller function (action) is executed.
+The purpose of this view is to render the variables in the returned dictionary (in our case ``grid``) into HTML.
+The view file is written in HTML, but it embeds Python code delimited by the special ``{{`` and ``}}``
+delimiters. This is quite different from the PHP code example, because the only code
+embedded into the HTML is "presentation layer" code. The "layout.html" file referenced at the top of the
+view is provided by web2py and constitutes the basic layout for all web2py applications. The layout file can
+easily be modified or replaced.
+
+### Why web2py
+
+web2py is one of many web application frameworks, but it has compelling and unique features.
+web2py was originally developed as a teaching tool, with the following primary motivations:
+- Easy for users to learn server-side web development without compromising functionality. For this reason, web2py requires no installation and no configuration, has no dependencies (except for the source code distribution, which requires Python 2.5 and its standard library modules), and exposes most of its functionality via a Web browser interface.
+- web2py has been stable from day one because it follows a top-down design; i.e., its API was designed before it was implemented. Even as new functionality has been added, web2py has never broken backwards compatibility, and it will not break compatibility when additional functionality is added in the future.
+- web2py proactively addresses the most important security issues which plague many modern web applications, as determined by OWASP``owasp``:cite  below.
+- web2py is lightweight. Its core libraries, including the Database Abstraction Layer, the template language, and all the helpers amount to 1.4MB. The entire source code including sample applications and images amounts to 10.4MB.
+- web2py has a small footprint and is very fast. It uses the Rocket``rocket``:cite  WSGI web server developed By Timothy Farrell. It is as fast as Apache with mod_wsgi. Our tests also indicate that, on an average PC, it serves an average dynamic page without database access in about 10ms. The DAL has very low overhead, typically less than 3%.
+- web2py uses Python syntax for models, controllers, and views, but does not import models and controllers (as all the other Python frameworks do) - instead it executes them. This means that apps can be installed, uninstalled, and modified without having to restart the web server (even in production), and different apps can cohexist without their modules interfering with one another.
+- web2py uses a Database Abstraction Layer (DAL) instead of an Object Relational Mapper (ORM). From a conceptual point of view, this means that different database tables are mapped into different instances of one ``Table`` class and not into different classes, while records are mapped into instances of one ``Row`` class, not into instances of the corresponding table class. From a practical point of view, it means that SQL syntax maps almost one-to-one into DAL syntax, and there is no complex metaclass programming going on under the hood as in popular ORMs, which would add latency.
+
+WSGI ``wsgi:w,wsgi:o``:cite (Web Server Gateway Interface) is an emerging Python standard for communication between a web server and Python applications).
+
+Here is a screenshot of the main web2py **admin** interface:
+
+[[image @///image/en200.png center 480px]]
+
+
+### Security
+``security``:inxx
+The Open Web Application Security Project``owasp``:cite  (OWASP) is a free and open worldwide community focused
+on improving the security of application software.
+
+OWASP has listed the top ten security issues that put web applications at risk.
+That list is reproduced here, along with a description of how each issue is addressed by web2py:
+- ``cross site scripting``:inxx  "Cross Site Scripting (XSS): XSS flaws occur whenever an application takes user supplied data and sends it to a web browser without first validating or encoding that content. XSS allows attackers to execute scripts in the victim's browser which can hijack user sessions, deface web sites, possibly introduce worms, etc." ''web2py, by default, escapes all variables rendered in the view, preventing XSS.''
+- ``injection flaws``:inxx "Injection Flaws: Injection flaws, particularly SQL injection, are common in web applications. Injection occurs when user-supplied data is sent to an interpreter as part of a command or query. The attacker's hostile data tricks the interpreter into executing unintended commands or changing data." ''web2py includes a Database Abstraction Layer that makes SQL injection impossible. Normally, SQL statements are not written by the developer.  Instead, SQL is generated dynamically by the DAL, ensuring that all inserted data is properly escaped.''
+- ``malicious file execution``:inxx "Malicious File Execution: Code vulnerable to remote file inclusion (RFI) allows attackers to include hostile code and data, resulting in devastating attacks, such as total server compromise." ''web2py allows only exposed functions to be executed, preventing malicious file execution. Imported functions are never exposed; only actions are exposed. web2py uses a Web-based administration interface which makes it very easy to keep track of what is exposed and what is not.''
+- ``insecure object reference``:inxx "Insecure Direct Object Reference: A direct object reference occurs when a developer exposes a reference to an internal implementation object, such as a file, directory, database record, or key, as a URL or form parameter. Attackers can manipulate those references to access other objects without authorization." ''web2py does not expose any internal objects; moreover, web2py validates all URLs, thus preventing directory traversal attacks. web2py also provides a simple mechanism to create forms that automatically validate all input values.''
+- ``CSRF``:inxx "Cross Site Request Forgery (CSRF): A CSRF attack forces a logged-on victim's browser to send a pre-authenticated request to a vulnerable web application, which then forces the victim's browser to perform a hostile action to the benefit of the attacker. CSRF can be as powerful as the web application that it attacks." ''web2py prevents CSRF as well as accidental double submission of forms by assigning a one-time random token to each form. Moreover web2py uses UUID for session cookie.''
+- ``information leakage``:inxx ``improper error handling``:inxx "Information Leakage and Improper Error Handling: Applications can unintentionally leak information about their configuration, internal workings, or violate privacy through a variety of application problems. Attackers use this weakness to steal sensitive data, or conduct more serious attacks." ''web2py includes a ticketing system. No error can result in code being exposed to the users. All errors are logged and a ticket is issued to the user that allows error tracking. But errors and source code are accessible only to the administrator.''
+- "Broken Authentication and Session Management: Account credentials and session tokens are often not properly protected. Attackers compromise passwords, keys, or authentication tokens to assume other users' identities." ''web2py provides a built-in mechanism for administrator authentication, and it manages sessions independently for each application. The administrative interface also forces the use of secure session cookies when the client is not "localhost". For applications, it includes a powerful Role Based Access Control API.''
+- ``cryptographic store``:inxx "Insecure Cryptographic Storage: Web applications rarely use cryptographic functions properly to protect data and credentials. Attackers use weakly protected data to conduct identity theft and other crimes, such as credit card fraud." ''web2py uses the MD5 or the HMAC+SHA-512 hash algorithms to protect stored passwords. Other algorithms are also available.''
+- ``secure communications``:inxx "Insecure Communications: Applications frequently fail to encrypt network traffic when it is necessary to protect sensitive communications." ''web2py includes the SSL-enabled``ssl``:cite  Rocket WSGI server, but it can also use Apache or Lighttpd and mod_ssl to provide SSL encryption of communications.''
+- ``access restriction``:inxx "Failure to Restrict URL Access: Frequently an application only protects sensitive functionality by preventing the display of links or URLs to unauthorized users. Attackers can use this weakness to access and perform unauthorized operations by accessing those URLs directly." ''web2py maps URL requests to Python modules and functions. web2py provides a mechanism for declaring which functions are public and which require authentication and authorization. The included Role Based Access Control API allow developers to restrict access to any function based on login, group membership or group based permissions. The permissions are very granular and can be combined with CRUD to allow, for example, to give access to specific tables and/or records. web2py also allows digitally signed URL and provides API to digitally sign ajax callbacks.''
+
+web2py was reviewed for security and you can find the result of the review in ref.``pythonsecurity``:cite.
+
+### In the box
+
+You can download web2py from the official web site:
+
+``
+http://www.web2py.com
+``:code
+
+web2py is composed of the following components:
+- **libraries**: provide core functionality of web2py and are accessible programmatically.
+- **web server**: the Rocket WSGI web server.
+- the **admin** application: used to create, design, and manage other web2py applications. **admin** provide a complete web-based Integrated Development Environment (IDE) for building web2py applications. It also includes other functionality, such as web-based testing and a web-based shell.
+- the **examples** application: contains documentation and interactive examples. **examples** is a clone of the official web2py.com web site, and includes epydoc documentation.
+- the **welcome** application: the basic scaffolding template for any other application. By default it includes a pure CSS cascading menu and user authentication (discussed in Chapter 9).
+
+web2py is distributed in source code, and in binary form for Microsoft Windows and for Mac OS X.
+
+The source code distribution can be used in any platform where Python runs and includes the above-mentioned components.
+To run the source code, you need Python 2.5 pre-installed on the system. You also need one of the supported database engines installed.
+For testing and light-demand applications, you can use the SQLite database, included with Python 2.5.
+
+The binary versions of web2py (for Windows and Mac OS X) include a Python 2.5 interpreter and
+the SQLite database. Technically, these two are not components of web2py. Including them in the binary distributions
+enables you to run web2py out of the box.
+
+The following image depicts the overall web2py structure:
+
+[[image @///image/en300.png center 480px]]
+
+### License
+``license``:inxx
+
+web2py is licensed under the LGPL version 3 License. The full text of the license if available in ref.``lgpl3``:cite.
+
+In accordance with LGPL you may:
+
+- redistribute web2py with your apps (including official web2py binary versions)
+- release your applications which use official web2py libraries under any license you wish
+
+Yet you must:
+
+- make clear in the documentation that your application uses web2py
+- release any modification of the web2py libraries under the LGPLv3 license
+
+The license includes the usual disclaimer:
+
+THERE IS NO WARRANTY FOR THE PROGRAM, TO THE EXTENT PERMITTED BY APPLICABLE LAW.
+EXCEPT WHEN OTHERWISE STATED IN WRITING THE COPYRIGHT HOLDERS AND/OR OTHER PARTIES
+PROVIDE THE PROGRAM “AS IS” WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESSED OR IMPLIED,
+INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+FOR A PARTICULAR PURPOSE. THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF THE
+PROGRAM IS WITH YOU. SHOULD THE PROGRAM PROVE DEFECTIVE, YOU ASSUME THE COST OF ALL
+NECESSARY SERVICING, REPAIR OR CORRECTION.
+
+IN NO EVENT UNLESS REQUIRED BY APPLICABLE LAW OR AGREED TO IN WRITING WILL ANY COPYRIGHT
+HOLDER, OR ANY OTHER PARTY WHO MODIFIES AND/OR CONVEYS THE PROGRAM AS PERMITTED ABOVE,
+BE LIABLE TO YOU FOR DAMAGES, INCLUDING ANY GENERAL, SPECIAL, INCIDENTAL OR CONSEQUENTIAL
+DAMAGES ARISING OUT OF THE USE OR INABILITY TO USE THE PROGRAM (INCLUDING BUT NOT LIMITED
+TO LOSS OF DATA OR DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES
+OR A FAILURE OF THE PROGRAM TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER OR OTHER
+PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
+
+**Earlier versions**
+
+Earlier versions of web2py, 1.0.*-1.90.*, were released under the GPL2 license plus a
+commercial exception which, for practical purposes, was very similar to the current LPGLv3.
+
+**Third party software distributed with web2py**
+
+web2py contains third party software under the gluon/contrib/ folder and various JavaScript and CSS files.
+These files are distributed with web2py under their original licenses, as stated in the files.
+
+
+### Acknowledgments
+
+web2py was originally developed by and copyrighted by Massimo Di Pierro.
+The first version (1.0) was released in October, 2007. Since then it has been adopted by many users, some of whom have also contributed bug reports, testing, debugging, patches, and proofreading of this book.
+
+Some of the major contributors are, in alphabetical order by first name:
+
+Alexey Nezhdanov,
+Alvaro Justen,
+Andrew Willimott,
+Angelo Compagnucci,
+Anthony Bastardi,
+Antonio Ramos,
+Arun K. Rajeevan,
+Attila Csipa,
+Bill Ferret,
+Boris Manojlovic,
+Branko Vukelic,
+Brian Meredyk,
+Bruno Rocha,
+Carlos Galindo,
+Carsten Haese,
+Chris Clark,
+Chris Steel,
+Christian Foster Howes,
+Christopher Smiga,
+CJ Lazell,
+Cliff Kachinske,
+Craig Younkins,
+Daniel Lin,
+David Harrison,
+David Wagner,
+Denes Lengyel,
+Douglas Soares de Andrade,
+Eric Vicenti,
+Falko Krause,
+Farsheed Ashouri,
+Fran Boon,
+Francisco Gama,
+Fred Yanowski,
+Gilson Filho,
+Graham Dumpleton,
+Gyuris Szabolcs,
+Hamdy Abdel-Badeea,
+Hans Donner,
+Hans Murx,
+Hans C. v. Stockhausen,
+Ian Reinhart Geiser,
+Ismael Serratos,
+Jan Beilicke,
+Jonathan Benn,
+Jonathan Lundell,
+Josh Goldfoot,
+Jose Jachuf,
+Josh Jaques,
+José Vicente de Sousa,
+Keith Yang,
+Kenji Hosoda,
+Kyle Smith,
+Limodou,
+Lucas D'Ávila,
+Marcel Leuthi,
+Marcel Hellkamp,
+Marcello Della Longa,
+Mariano Reingart,
+Mark Larsen,
+Mark Moore,
+Markus Gritsch,
+Martin Hufsky,
+Martin Mulone,
+Mateusz Banach,
+Miguel Lopez,
+Michael Willis,
+Michele Comitini,
+Nathan Freeze,
+Niall Sweeny,
+Niccolo Polo,
+Nicolas Bruxer,
+Olaf Ferger,
+Omi Chiba,
+Ondrej Such,
+Ovidio Marinho Falcao Neto,
+Pai,
+Paolo Caruccio,
+Patrick Breitenbach,
+Phyo Arkar Lwin,
+Pierre Thibault,
+Ramjee Ganti,
+Robin Bhattacharyya,
+Ross Peoples,
+Ruijun Luo,
+Ryan Seto,
+Scott Roberts,
+Sergey Podlesnyi,
+Sharriff Aina,
+Simone Bizzotto,
+Sriram Durbha,
+Sterling Hankins,
+Stuart Rackham,
+Telman Yusupov,
+Thadeus Burgess,
+Tim Michelsen,
+Timothy Farrell,
+Yair Eshel,
+Yarko Tymciurak,
+Younghyun Jo,
+Vidul Nikolaev Petrov,
+Vinicius Assef,
+Zahariash.
+
+
+I am sure I forgot somebody, so I apologize.
+
+I particularly thank Jonathan, Mariano, Bruno, Martin, Nathan, Simone, Thadeus, Tim, Iceberg, Denes, Hans, Christian, Fran and Patrick for their major contributions to web2py and Anthony, Alvaro, Bruno, Denes, Felipe, Graham, Jonathan, Hans, Kyle, Mark, Michele, Richard, Robin, Roman, Scott, Shane, Sharriff, Sriram, Sterling, Stuart, Thadeus (and others) for proofreading various versions of this book. Their contribution was invaluable. If you find any errors in this book, they are exclusively my fault, probably introduced by a last-minute edit. I also thank Ryan Steffen of Wiley Custom Learning Solutions for help with publishing the first edition of this book.
+
+web2py contains code from the following authors, whom I would like to thank:
+
+Guido van Rossum for Python``python``:cite, Peter Hunt, Richard Gordon, Timothy Farrell for the Rocket``rocket``:cite  web server, Christopher Dolivet for EditArea``editarea``:cite, Bob Ippolito for simplejson``simplejson``:cite, Simon Cusack and Grant Edwards for pyRTF``pyrtf``:cite, Dalke Scientific Software for pyRSS2Gen``pyrss2gen``:cite, Mark Pilgrim for feedparser``feedparser``:cite, Trent Mick for markdown2``markdown2``:cite, Allan Saddi for fcgi.py, Evan Martin for the Python memcache module``memcache``:cite, John Resig for jQuery``jquery``:cite.
+
+The cover of this book was designed by Peter Kirchner at Young Designers.
+
+I thank Helmut Epp (provost of DePaul University), David Miller (Dean of the College of Computing and Digital Media of DePaul University), and Estia Eichten (Member of MetaCryption LLC), for their continuous trust and support.
+
+Finally, I wish to thank my wife, Claudia, and my son, Marco, for putting up with me during the many hours I have spent developing web2py, exchanging emails with users and collaborators, and writing this book. This book is dedicated to them.
+
+### About this book
+
+This book includes the following chapters, besides this introduction:
+- Chapter 2 is a minimalist introduction to Python. It assumes knowledge of both procedural and object-oriented programming concepts such as loops, conditions, function calls and classes, and covers basic Python syntax. It also covers examples of Python modules that are used throughout the book. If you already know Python, you may skip Chapter 2.
+- Chapter 3 shows how to start web2py, discusses the administrative interface, and guides the reader through various examples of increasing complexity: an application that returns a string, a counter application, an image blog, and a full blown wiki application that allows image uploads and comments, provides authentication, authorization, web services and an RSS feed. While reading this chapter, you may need to refer to Chapter 2 for general Python syntax and to the following chapters for a more detailed reference about the functions that are used.
+- Chapter 4 covers more systematically the core structure and libraries: URL mapping, request, response, sessions, caching, cron, internationalization and general workflow.
+- Chapter 5 is a reference for the template language used to build views. It shows how to embed Python code into HTML, and demonstrates the use of helpers (objects that can generate HTML).
+- Chapter 6 covers the Database Abstraction Layer, or DAL. The syntax of the DAL is presented through a series of examples.
+- Chapter 7 covers forms, form validation and form processing. FORM is the low level helper for form building. SQLFORM is the high level form builder. In Chapter 7 we also discuss the Create/Read/Update/Delete (CRUD) API.
+- Chapter 8 covers communication with as sending emails and SMSes.
+- Chapter 9 covers authentication, authorization and the extensible Role-Based Access Control mechanism available in web2py. Mail configuration and CAPTCHA are also discussed here, since they are used for authentication. In the third edition of the book we have added extensive coverage of integration with third-party authentication mechanisms such as OpenID, OAuth, Google, Facebook, LinkedIn, etc.
+- Chapter 10 is about creating web services in web2py. We provide examples of integration with the Google Web Toolkit via Pyjamas, and with Adobe Flash via PyAMF.
+- Chapter 11 is about web2py and jQuery recipes. web2py is designed mainly for server-side programming, but it includes jQuery, since we have found it to be the best open-source JavaScript library available for effects and Ajax. In this chapter, we discuss how to effectively use jQuery with web2py.
+- Chapter 12 discusses web2py components and plugins as a way to build modular applications. We provide an example of a plugin that implements many commonly used functionality, such as charting, comments, tagging, and wiki.
+- Chapter 13 is about production deployment of web2py applications. We mainly address three possible production scenarios: on a Linux web server or a set of servers (which we consider the main deployment alternative), running as a service on a Microsoft Windows environment, and deployment on the Google Applications Engine. In this chapter, we also discuss security and scalability issues.
+- Chapter 14 contains a variety of other recipes to solve specific tasks, including upgrades, geocoding, pagination, the Twitter API, and more.
+
+This book only covers basic web2py functionalities and the API that ships with web2py.
+This book does not cover web2py appliances (i.e. ready made applications).
+
+You can download web2py appliances from the corresponding web site ``appliances``:cite.
+
+You can find additional topics discussed on AlterEgo``alterego``:cite, the interactive web2py FAQ.
+
+This book has been written using the markmin syntax ``MARKMIN``:inxx and automatically converted to HTML, LaTeX and PDF.
+
+### Elements of style
+
+PEP8 ``style``:cite  contains good style practices when programming with Python. You will find
+that web2py does not always follow these rules. This is not because of omissions or negligence; it is our
+belief that the users of web2py should follow these rules and we encourage it. We chose not to
+follow some of those rules when defining web2py helper objects in order to minimize the probability
+of name conflict with objects defined by the user.
+
+For example, the class that represents a ``<div>`` is called ``DIV``, while according to the
+Python style reference it should have been called ``Div``. We believe that, for this specific example that
+using an all-upper-case "DIV" is a more natural choice. Moreover, this approach leaves programmers
+free to create a class called "Div" if they choose to do so.
+Our syntax also maps naturally into the DOM notation of most browsers (including, for example, Firefox).
+
+According to the Python style guide, all-upper-case strings should be used for constants and not
+variables. Continuing with our example, even considering that ``DIV`` is a class,
+it is a special class that should never be modified by
+the user because doing so would break other web2py applications.
+Hence, we believe this qualifies the ``DIV`` class as
+something that should be treated as a constant, further justifying our choice of notation.
+
+In summary, the following conventions are followed:
+- HTML helpers and validators are all upper case for the reasons discussed above (for example ``DIV``, ``A``, ``FORM``, ``URL``).
+- The translator object ``T`` is upper case despite the fact that it is an instance of a class and not a class itself. Logically the translator object performs an action similar to the HTML helpers, it affects rendering part of the presentation. Also, ``T`` needs to be easy to locate in the code and must have a short name.
+- DAL classes follow the Python style guide (first letter capitalized), for example ``Table``, ``Field``, ``Query``, ``Row``, ``Rows``, etc.
+
+In all other cases we believe we have followed, as much as possible,
+the Python Style Guide (PEP8).
+For example all instance objects are lower-case (request, response, session, cache), and all internal classes are capitalized.
+
+In all the examples of this book, web2py keywords are shown in bold, while strings and comments are shown in italic.
+
