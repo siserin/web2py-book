@@ -348,7 +348,7 @@ else:
 
 Si tienes una cuenta válida de Authorize.Net deberías reemplazar el sandbox ``login`` y ``transkey`` con estos de tu cuenta, configurar  ``testmode=False`` para ejecutar en la plataforma real en lugar del sandbox, y usar la información de la tarjeta de crédito dada por el visitante.
 
-Si ``process`` returna ``True``, el dinero ha sido transferido desde la tarjeta de crédito del visitante a tu cuenta en Authorize.Net. ``invoice`` es solo un string que puede ser configurado y será almacenado por Authorize.Net con esta transacción entonces tienes que conciliar la data con la información en tu aplicación.
+Si ``process`` devuelve ``True``, el dinero ha sido transferido desde la tarjeta de crédito del visitante a tu cuenta en Authorize.Net. ``invoice`` es solo un string que puede ser configurado y será almacenado por Authorize.Net con esta transacción entonces tienes que conciliar la data con la información en tu aplicación.
 
 Aquí un ejemplo más complejo del workflow donde más variables son expuestas:
 ``
@@ -358,17 +358,17 @@ payment = AIM(login='cnpdev4289',
               testmod=True)
 payment.setTransaction(creditcard, expiration, total, cvv, tax, invoice)
 payment.setParameter('x_duplicate_window', 180) # three minutes duplicate windows
-payment.setParameter('x_cust_id', '1324')       # customer ID
-payment.setParameter('x_first_name', 'Agent')
+payment.setParameter('x_cust_id', '1324')       # ID cliente
+payment.setParameter('x_first_name', 'Agente')
 payment.setParameter('x_last_name', 'Smith')
-payment.setParameter('x_company', 'Test Company')
+payment.setParameter('x_company', 'Empresa Prueba')
 payment.setParameter('x_address', '1234 Main Street')
 payment.setParameter('x_city', 'Townsville')
 payment.setParameter('x_state', 'NJ')
 payment.setParameter('x_zip', '12345')
 payment.setParameter('x_country', 'US')
 payment.setParameter('x_phone', '800-555-1234')
-payment.setParameter('x_description', 'Test Transaction')
+payment.setParameter('x_description', 'Transacción Prueba')
 payment.setParameter('x_customer_ip', socket.gethostbyname(socket.gethostname()))
 payment.setParameter('x_email', 'you@example.com')
 payment.setParameter('x_email_customer', False)
@@ -383,9 +383,9 @@ if payment.isApproved():
     print 'Approval Code: ', payment.response.AuthCode
     print 'AVS Result: ', payment.response.AVSResponse
 elif payment.isDeclined():
-    print 'Your credit card was declined by your bank'
+    print 'Su tarjeta de crédito ha sido rechazada por su banco'
 elif payment.isError():
-    print 'It did not work'
+    print 'No funcionó'
 print 'approved',payment.isApproved()
 print 'declined',payment.isDeclined()
 print 'error',payment.isError()
@@ -443,7 +443,7 @@ contents = mydropbox.dir(path = '/')['contents']
 
 ### Twitter API
 
-Aquí algunos ejemplos rápidos sobre como enviar y obtener tweets. No librerías de terceros son requeridas, desde que Twitter usa APIs RESTful.
+Aquí algunos ejemplos rápidos sobre como enviar y obtener tweets. No son requeridas librerías de terceros, desde que Twitter usa APIs RESTful.
 
 Aquí un ejemplo de como enviar un tweet:
 ``
